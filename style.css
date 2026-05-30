@@ -1,86 +1,130 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+* {
+    font-family: "Myriad Pro", "Myriad", Arial, sans-serif !important;
+}
+
+body {
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Current Meeting Person Name */
 #meetingTitle {
-  position: absolute;
-  left: 90px;
-  top: 365px;
-  width: 760px;
-  font-size: 34px;
-  font-weight: 700;
-  color: #000;
+    position: absolute;
+    left: 90px;
+    top: 365px;
+    width: 850px;
+
+    font-size: 34px;
+    font-weight: 700;
+    color: #000000;
+
+    line-height: 1.15;
 }
 
+/* Guest Attendees */
 #guestAttendees {
-  position: absolute;
-  left: 90px;
-  top: 565px;
-  width: 650px;
-  font-size: 32px;
-  font-weight: 700;
-  color: #000;
-  line-height: 1.25;
-  white-space: pre-wrap;
+    position: absolute;
+    left: 90px;
+    top: 565px;
+    width: 700px;
+
+    font-size: 32px;
+    font-weight: 700;
+    color: #000000;
+
+    line-height: 1.25;
+    white-space: pre-wrap;
 }
 
+/* Caris Attendees */
 #carisAttendees {
-  position: absolute;
-  left: 90px;
-  top: 870px;
-  width: 650px;
-  font-size: 32px;
-  font-weight: 700;
-  color: #000;
-  line-height: 1.25;
-  white-space: pre-wrap;
+    position: absolute;
+    left: 90px;
+    top: 875px;
+    width: 700px;
+
+    font-size: 32px;
+    font-weight: 700;
+    color: #000000;
+
+    line-height: 1.25;
+    white-space: pre-wrap;
 }
 
+/* Clock Time */
 #clockTime {
-  position: absolute;
-  left: 1525px;
-  top: 430px;
-  width: 300px;
-  text-align: center;
-  font-size: 34px;
-  font-weight: 700;
-  color: #000;
+    position: absolute;
+    left: 1385px;
+    top: 425px;
+    width: 430px;
+
+    text-align: center;
+
+    font-size: 36px;
+    font-weight: 700;
+    color: #000000;
 }
 
+/* Clock Date */
 #clockDate {
-  position: absolute;
-  left: 1525px;
-  top: 475px;
-  width: 300px;
-  text-align: center;
-  font-size: 34px;
-  font-weight: 700;
-  color: #000;
+    position: absolute;
+    left: 1385px;
+    top: 475px;
+    width: 430px;
+
+    text-align: center;
+
+    font-size: 36px;
+    font-weight: 700;
+    color: #000000;
 }
 
-#nextTime {
-  position: absolute;
-  left: 1415px;
-  top: 690px;
-  width: 430px;
-  text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: #000;
-}
-
-#nextTitle {
-  position: absolute;
-  left: 1420px;
-  top: 805px;
-  width: 420px;
-  text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: #000;
-  line-height: 1.15;
-}
-
+/* Status Image */
 #statusImage {
-  position: absolute;
-  left: 930px;
-  top: 930px;
-  width: 260px;
-  height: auto;
+    position: absolute;
+    left: 860px;
+    top: 885px;
+
+    width: 380px;
+    height: auto;
+}
+
+/* Next Meeting Time */
+#nextTime {
+    position: absolute;
+    left: 1370px;
+    top: 695px;
+    width: 420px;
+
+    text-align: center;
+
+    font-size: 34px;
+    font-weight: 700;
+    color: #000000;
+}
+
+/* Next Meeting Person */
+#nextTitle {
+    position: absolute;
+    left: 1370px;
+    top: 820px;
+    width: 420px;
+
+    text-align: center;
+
+    font-size: 32px;
+    font-weight: 700;
+    color: #000000;
+
+    line-height: 1.15;
 }
