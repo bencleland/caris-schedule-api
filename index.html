@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CARIS Meeting Room Display</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="display">
+    <section class="left-panel">
+      <div class="hex-bg"></div>
+
+      <h1 id="room-title">Meeting Room</h1>
+      <h2 id="meeting-title">Meeting with —</h2>
+
+      <section class="info-block guest-block">
+        <h3 id="guest-label">Guest Attendees</h3>
+        <div id="guest-attendees" class="body-text">—</div>
+      </section>
+
+      <section class="info-block caris-block">
+        <h3>Caris Attendees</h3>
+        <div id="caris-attendees" class="body-text">—</div>
+      </section>
+
+      <img id="status-image" class="status-image" alt="Room status" />
+    </section>
+
+    <aside class="right-panel">
+      <div class="logo-block">
+        <div class="caris-mark">⌒⌒⌒</div>
+        <div class="caris-name">CARIS</div>
+        <div class="caris-subtitle">LIFE SCIENCES</div>
+      </div>
+
+      <div id="clock" class="clock">--:--</div>
+      <div id="date" class="date">—</div>
+
+      <section class="next-card">
+        <h3>NEXT MEETING</h3>
+        <div id="next-time" class="next-time">—</div>
+        <div id="next-title" class="next-title">—</div>
+        <div class="divider"></div>
+        <a id="schedule-button" class="schedule-button" href="#">VIEW SCHEDULE</a>
+      </section>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
