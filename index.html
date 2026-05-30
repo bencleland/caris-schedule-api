@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css?v=500">
+  <link rel="stylesheet" href="style.css?v=600">
 </head>
 
 <body>
@@ -15,6 +15,8 @@
   <img id="statusImage" src="">
   <div id="nextTime"></div>
   <div id="nextTitle"></div>
+
+  <div id="debug" style="position:absolute;left:20px;bottom:20px;background:yellow;color:black;z-index:99999;font-size:18px;padding:10px;max-width:1650px;"></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -33,7 +35,7 @@
     };
 
     document.body.style.backgroundImage =
-      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=500")`;
+      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=600")`;
 
     const apiUrl =
       "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=Current%20Meeting%20Room%201";
@@ -83,22 +85,28 @@
 
     function getActiveMeeting(rows) {
       const now = new Date();
+
       const roomRows = rows.filter(row => clean(row["Room Name"]) === roomName);
-
-      const activeYes = roomRows.find(row =>
-        clean(row["Active"]).toUpperCase() === "YES"
-      );
-
-      if (activeYes) return activeYes;
 
       const activeByTime = roomRows
         .map(row => ({
           row,
+          title: clean(row["Meeting Title"]),
+          startRaw: clean(row["Start Time"]),
+          endRaw: clean(row["End Time"]),
           start: parseSheetDate(row["Start Time"]),
           end: parseSheetDate(row["End Time"])
         }))
         .filter(item => item.start && item.end && now >= item.start && now < item.end)
         .sort((a, b) => b.start - a.start);
+
+      const sample = roomRows
+        .slice(0, 8)
+        .map(r => `${clean(r["Meeting Title"])} [${clean(r["Start Time"])}-${clean(r["End Time"])}]`)
+        .join(" || ");
+
+      debug.innerText =
+        `Room: ${roomName} | Now: ${now.toLocaleString()} | Rows: ${roomRows.length} | Matches: ${activeByTime.length} | Active: ${activeByTime[0]?.title || "NONE"} | Sample: ${sample}`;
 
       return activeByTime.length ? activeByTime[0].row : null;
     }
@@ -160,6 +168,7 @@
         setDisplay(activeMeeting, rows);
 
       } catch (err) {
+        debug.innerText = "ERROR: " + err.message;
         console.error("Data load error:", err);
       }
     }
