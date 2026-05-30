@@ -9,13 +9,10 @@ exports.handler = async function (event) {
 
   const response = await fetch(scriptUrl, {
     cache: "no-store",
-    headers: {
-      "Cache-Control": "no-cache"
-    }
+    headers: { "Cache-Control": "no-cache" }
   });
 
   const data = await response.json();
-  const body = Array.isArray(data) ? data : [data.result || data];
 
   return {
     statusCode: 200,
@@ -26,6 +23,6 @@ exports.handler = async function (event) {
       "Expires": "0",
       "Access-Control-Allow-Origin": "*"
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify(data)
   };
 };
