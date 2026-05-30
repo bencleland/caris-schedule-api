@@ -17,17 +17,19 @@ body {
     position: relative;
 }
 
+/* Dynamic current meeting name */
 #meetingTitle {
     position: absolute;
     left: 90px;
     top: 365px;
     width: 850px;
-    font-size: 34px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 400;
     color: #000;
-    line-height: 1.15;
+    line-height: 1.3;
 }
 
+/* Dynamic guest attendee names */
 #guestAttendees {
     position: absolute;
     left: 90px;
@@ -40,6 +42,7 @@ body {
     white-space: pre-wrap;
 }
 
+/* Dynamic Caris attendee names */
 #carisAttendees {
     position: absolute;
     left: 90px;
@@ -52,55 +55,59 @@ body {
     white-space: pre-wrap;
 }
 
+/* Dynamic clock centered to white card/right column */
 #clockTime {
     position: absolute;
-    left: 1310px;
-    top: 410px;
-    width: 540px;
+    left: 1370px;
+    top: 395px;
+    width: 470px;
     text-align: center;
-    font-size: 56px;
-    font-weight: 700;
+    font-size: 68px;
+    font-weight: 400;
     color: #fff;
 }
 
 #clockDate {
     position: absolute;
-    left: 1310px;
-    top: 480px;
-    width: 540px;
+    left: 1370px;
+    top: 475px;
+    width: 470px;
     text-align: center;
-    font-size: 30px;
+    font-size: 36px;
     font-weight: 400;
     color: #fff;
 }
 
+/* Dynamic status image */
 #statusImage {
     position: absolute;
-    left: 850px;
-    top: 860px;
-    width: 390px;
+    left: 835px;
+    top: 850px;
+    width: 430px;
     height: auto;
 }
 
+/* Dynamic next meeting time */
 #nextTime {
     position: absolute;
-    left: 1325px;
-    top: 690px;
-    width: 520px;
+    left: 1370px;
+    top: 695px;
+    width: 470px;
     text-align: center;
-    font-size: 34px;
-    font-weight: 700;
+    font-size: 26px;
+    font-weight: 400;
     color: #000;
 }
 
+/* Dynamic next meeting title/name */
 #nextTitle {
     position: absolute;
-    left: 1325px;
-    top: 805px;
-    width: 520px;
+    left: 1370px;
+    top: 815px;
+    width: 470px;
     text-align: center;
-    font-size: 30px;
+    font-size: 24px;
     font-weight: 400;
     color: #000;
-    line-height: 1.15;
+    line-height: 1.2;
 }
