@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css?v=402">
+  <link rel="stylesheet" href="style.css?v=500">
 </head>
 
 <body>
@@ -33,13 +33,20 @@
     };
 
     document.body.style.backgroundImage =
-      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=402")`;
+      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=500")`;
 
     const apiUrl =
       "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=Current%20Meeting%20Room%201";
 
     function clean(value) {
       return (value || "").trim();
+    }
+
+    function flattenData(data) {
+      if (Array.isArray(data?.[0])) return data[0];
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.result)) return data.result;
+      return [];
     }
 
     function parseSheetDate(value) {
@@ -68,14 +75,7 @@
         if (ampm === "PM" && hour !== 12) hour += 12;
         if (ampm === "AM" && hour === 12) hour = 0;
 
-        return new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-          hour,
-          minute,
-          0
-        );
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
       }
 
       return null;
@@ -83,15 +83,24 @@
 
     function getActiveMeeting(rows) {
       const now = new Date();
+      const roomRows = rows.filter(row => clean(row["Room Name"]) === roomName);
 
-      return rows.find(row => {
-        if (clean(row["Room Name"]) !== roomName) return false;
+      const activeYes = roomRows.find(row =>
+        clean(row["Active"]).toUpperCase() === "YES"
+      );
 
-        const start = parseSheetDate(row["Start Time"]);
-        const end = parseSheetDate(row["End Time"]);
+      if (activeYes) return activeYes;
 
-        return start && end && now >= start && now < end;
-      });
+      const activeByTime = roomRows
+        .map(row => ({
+          row,
+          start: parseSheetDate(row["Start Time"]),
+          end: parseSheetDate(row["End Time"])
+        }))
+        .filter(item => item.start && item.end && now >= item.start && now < item.end)
+        .sort((a, b) => b.start - a.start);
+
+      return activeByTime.length ? activeByTime[0].row : null;
     }
 
     function getNextMeeting(rows) {
@@ -145,7 +154,7 @@
         });
 
         const data = await response.json();
-        const rows = Array.isArray(data) ? data : data.result || [];
+        const rows = flattenData(data);
 
         const activeMeeting = getActiveMeeting(rows);
         setDisplay(activeMeeting, rows);
