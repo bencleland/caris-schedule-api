@@ -1,22 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARIS Meeting Room Display</title>
+
+    <!-- Prevent browser caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
-  <div id="meetingTitle"></div>
-  <div id="guestAttendees"></div>
-  <div id="carisAttendees"></div>
 
-  <div id="clockTime"></div>
-  <div id="clockDate"></div>
+    <!-- Dynamic Current Meeting -->
+    <div id="meetingTitle"></div>
 
-  <div id="nextTime"></div>
-  <div id="nextTitle"></div>
-  <img id="statusImage" />
+    <!-- Dynamic Guest Attendees -->
+    <div id="guestAttendees"></div>
 
-  <script src="script.js"></script>
+    <!-- Dynamic Caris Attendees -->
+    <div id="carisAttendees"></div>
+
+    <!-- Dynamic Clock -->
+    <div id="clockTime"></div>
+    <div id="clockDate"></div>
+
+    <!-- Dynamic Status Image -->
+    <img id="statusImage" src="" alt="Status">
+
+    <!-- Dynamic Next Meeting -->
+    <div id="nextTime"></div>
+    <div id="nextTitle"></div>
+
+    <!-- Force latest script version -->
+    <script src="script.js?v=5"></script>
+
 </body>
 </html>
