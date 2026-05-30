@@ -2,9 +2,10 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>CARIS Display Debug</title>
-  <link rel="stylesheet" href="style.css?v=200">
+  <title>CARIS Meeting Room Display</title>
+  <link rel="stylesheet" href="style.css?v=300">
 </head>
+
 <body>
   <div id="meetingTitle"></div>
   <div id="guestAttendees"></div>
@@ -14,18 +15,6 @@
   <img id="statusImage" src="">
   <div id="nextTime"></div>
   <div id="nextTitle"></div>
-
-  <div id="debug" style="
-    position:absolute;
-    left:20px;
-    bottom:20px;
-    background:yellow;
-    color:black;
-    padding:12px;
-    font-size:18px;
-    z-index:9999;
-    max-width:1600px;
-  "></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -39,7 +28,8 @@
       "Current Pod 2": "POD 2.png"
     };
 
-    document.body.style.backgroundImage = `url("${backgrounds[sheet] || "MEETING ROOM 1.png"}")`;
+    document.body.style.backgroundImage =
+      `url("${backgrounds[sheet] || "MEETING ROOM 1.png"}?v=300")`;
 
     async function loadData() {
       const apiUrl =
@@ -49,14 +39,17 @@
         Date.now();
 
       try {
-        const response = await fetch(apiUrl, { cache: "no-store" });
-        const data = await response.json();
-        const room = Array.isArray(data) ? data[0] : data;
+        const response = await fetch(apiUrl, {
+          cache: "no-store"
+        });
 
-        document.getElementById("debug").innerText =
-          "Sheet: " + sheet +
-          " | API Title: " + (room?.["Meeting Title"] || "NO TITLE") +
-          " | Updated: " + new Date().toLocaleTimeString();
+        const data = await response.json();
+
+        const room = Array.isArray(data?.[0])
+          ? data[0][0]
+          : Array.isArray(data)
+            ? data[0]
+            : data;
 
         if (!room) return;
 
@@ -67,23 +60,30 @@
         nextTitle.innerText = room["Next Meeting Title"] || "";
 
         if (room["Status Image"]) {
-          statusImage.src = room["Status Image"];
+          statusImage.src =
+            room["Status Image"] +
+            (room["Status Image"].includes("?") ? "&" : "?") +
+            "t=" +
+            Date.now();
+
           statusImage.style.display = "block";
         } else {
           statusImage.style.display = "none";
         }
 
       } catch (err) {
-        document.getElementById("debug").innerText = "ERROR: " + err.message;
+        console.error("Data load error:", err);
       }
     }
 
     function updateClock() {
       const now = new Date();
+
       clockTime.innerText = now.toLocaleTimeString([], {
         hour: "numeric",
         minute: "2-digit"
       });
+
       clockDate.innerText = now.toLocaleDateString([], {
         weekday: "long",
         month: "long",
@@ -93,6 +93,7 @@
 
     loadData();
     updateClock();
+
     setInterval(loadData, 5000);
     setInterval(updateClock, 1000);
   </script>
