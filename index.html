@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css?v=300">
+  <link rel="stylesheet" href="style.css?v=400">
 </head>
 
 <body>
@@ -18,58 +18,131 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const sheet = params.get("sheet") || "Current Meeting Room 1";
+
+    const roomName =
+      params.get("room") ||
+      params.get("sheet")?.replace("Current ", "") ||
+      "Meeting Room 1";
 
     const backgrounds = {
-      "Current Meeting Room 1": "MEETING ROOM 1.png",
-      "Current Meeting Room 2": "MEETING ROOM 2.png",
-      "Current Meeting Room 3": "MEETING ROOM 3.png",
-      "Current Pod 1": "POD 1.png",
-      "Current Pod 2": "POD 2.png"
+      "Meeting Room 1": "MEETING ROOM 1.png",
+      "Meeting Room 2": "MEETING ROOM 2.png",
+      "Meeting Room 3": "MEETING ROOM 3.png",
+      "Pod 1": "POD 1.png",
+      "Pod 2": "POD 2.png"
     };
 
     document.body.style.backgroundImage =
-      `url("${backgrounds[sheet] || "MEETING ROOM 1.png"}?v=300")`;
+      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=400")`;
+
+    const apiUrl =
+      "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=Current%20Meeting%20Room%201";
+
+    function parseSheetDate(value) {
+      if (!value) return null;
+
+      const parts = value.trim().split(" ");
+      if (parts.length < 2) return null;
+
+      const dateParts = parts[0].split("/");
+      const timeParts = parts[1].split(":");
+
+      if (dateParts.length < 3 || timeParts.length < 2) return null;
+
+      const month = parseInt(dateParts[0], 10) - 1;
+      const day = parseInt(dateParts[1], 10);
+      const year = parseInt(dateParts[2], 10);
+
+      const hour = parseInt(timeParts[0], 10);
+      const minute = parseInt(timeParts[1], 10);
+      const second = parseInt(timeParts[2] || "0", 10);
+
+      return new Date(year, month, day, hour, minute, second);
+    }
+
+    function clean(value) {
+      return (value || "").trim();
+    }
+
+    function getActiveMeeting(rows) {
+      const now = new Date();
+
+      return rows.find(row => {
+        if (clean(row["Room Name"]) !== roomName) return false;
+
+        const start = parseSheetDate(row["Start Time"]);
+        const end = parseSheetDate(row["End Time"]);
+
+        return start && end && now >= start && now < end;
+      });
+    }
+
+    function getNextMeeting(rows) {
+      const now = new Date();
+
+      return rows
+        .filter(row => clean(row["Room Name"]) === roomName)
+        .map(row => ({
+          row,
+          start: parseSheetDate(row["Start Time"])
+        }))
+        .filter(item => item.start && item.start > now)
+        .sort((a, b) => a.start - b.start)[0]?.row || null;
+    }
+
+    function setDisplay(room, rows) {
+      const next = getNextMeeting(rows);
+
+      if (!room) {
+        meetingTitle.innerText = "Available";
+        guestAttendees.innerText = "";
+        carisAttendees.innerText = "";
+        nextTime.innerText = next ? clean(next["Start Time"]) : "";
+        nextTitle.innerText = next ? clean(next["Meeting Title"]) : "";
+        statusImage.style.display = "none";
+        return;
+      }
+
+      meetingTitle.innerText = clean(room["Meeting Title"]);
+      guestAttendees.innerText = clean(room["Guest Attendees"]);
+      carisAttendees.innerText = clean(room["Caris Attendees"]);
+
+      nextTime.innerText =
+        clean(room["Next Meeting Start Display"]) ||
+        (next ? clean(next["Start Time"]) : "");
+
+      nextTitle.innerText =
+        clean(room["Next Meeting Title"]) ||
+        (next ? clean(next["Meeting Title"]) : "");
+
+      if (room["Status Image"]) {
+        statusImage.src =
+          clean(room["Status Image"]) +
+          (room["Status Image"].includes("?") ? "&" : "?") +
+          "t=" +
+          Date.now();
+
+        statusImage.style.display = "block";
+      } else {
+        statusImage.style.display = "none";
+      }
+    }
 
     async function loadData() {
-      const apiUrl =
-        "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=" +
-        encodeURIComponent(sheet) +
-        "&t=" +
-        Date.now();
-
       try {
-        const response = await fetch(apiUrl, {
+        const response = await fetch(apiUrl + "&t=" + Date.now(), {
           cache: "no-store"
         });
 
         const data = await response.json();
 
-        const room = Array.isArray(data?.[0])
-          ? data[0][0]
-          : Array.isArray(data)
-            ? data[0]
-            : data;
+        const rows = Array.isArray(data)
+          ? data
+          : data.result || [];
 
-        if (!room) return;
+        const activeMeeting = getActiveMeeting(rows);
 
-        meetingTitle.innerText = room["Meeting Title"] || "";
-        guestAttendees.innerText = room["Guest Attendees"] || "";
-        carisAttendees.innerText = room["Caris Attendees"] || "";
-        nextTime.innerText = room["Next Meeting Start Display"] || room["Next Meeting Start"] || "";
-        nextTitle.innerText = room["Next Meeting Title"] || "";
-
-        if (room["Status Image"]) {
-          statusImage.src =
-            room["Status Image"] +
-            (room["Status Image"].includes("?") ? "&" : "?") +
-            "t=" +
-            Date.now();
-
-          statusImage.style.display = "block";
-        } else {
-          statusImage.style.display = "none";
-        }
+        setDisplay(activeMeeting, rows);
 
       } catch (err) {
         console.error("Data load error:", err);
