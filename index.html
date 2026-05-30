@@ -1,29 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CARIS Meeting Room Display</title>
-
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-
-  <link rel="stylesheet" href="style.css?v=101" />
+  <meta charset="UTF-8">
+  <title>CARIS Display Debug</title>
+  <link rel="stylesheet" href="style.css?v=200">
 </head>
-
 <body>
   <div id="meetingTitle"></div>
   <div id="guestAttendees"></div>
   <div id="carisAttendees"></div>
-
   <div id="clockTime"></div>
   <div id="clockDate"></div>
-
-  <img id="statusImage" src="" alt="Status" />
-
+  <img id="statusImage" src="">
   <div id="nextTime"></div>
   <div id="nextTitle"></div>
+
+  <div id="debug" style="
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    background:yellow;
+    color:black;
+    padding:12px;
+    font-size:18px;
+    z-index:9999;
+    max-width:1600px;
+  "></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -37,85 +39,62 @@
       "Current Pod 2": "POD 2.png"
     };
 
-    if (backgrounds[sheet]) {
-      document.body.style.backgroundImage = `url("${backgrounds[sheet]}?v=101")`;
-    }
+    document.body.style.backgroundImage = `url("${backgrounds[sheet] || "MEETING ROOM 1.png"}")`;
 
     async function loadData() {
+      const apiUrl =
+        "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=" +
+        encodeURIComponent(sheet) +
+        "&t=" +
+        Date.now();
+
       try {
-        const apiUrl =
-          "/.netlify/functions/schedule?sheet=" +
-          encodeURIComponent(sheet) +
-          "&t=" +
-          Date.now();
-
-        const response = await fetch(apiUrl, {
-          method: "GET",
-          cache: "no-store",
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0"
-          }
-        });
-
+        const response = await fetch(apiUrl, { cache: "no-store" });
         const data = await response.json();
         const room = Array.isArray(data) ? data[0] : data;
 
+        document.getElementById("debug").innerText =
+          "Sheet: " + sheet +
+          " | API Title: " + (room?.["Meeting Title"] || "NO TITLE") +
+          " | Updated: " + new Date().toLocaleTimeString();
+
         if (!room) return;
 
-        document.getElementById("meetingTitle").innerText = room["Meeting Title"] || "";
-        document.getElementById("guestAttendees").innerText = room["Guest Attendees"] || "";
-        document.getElementById("carisAttendees").innerText = room["Caris Attendees"] || "";
-        document.getElementById("nextTime").innerText = room["Next Meeting Start Display"] || room["Next Meeting Start"] || "";
-        document.getElementById("nextTitle").innerText = room["Next Meeting Title"] || "";
-
-        const statusImage = document.getElementById("statusImage");
+        meetingTitle.innerText = room["Meeting Title"] || "";
+        guestAttendees.innerText = room["Guest Attendees"] || "";
+        carisAttendees.innerText = room["Caris Attendees"] || "";
+        nextTime.innerText = room["Next Meeting Start Display"] || room["Next Meeting Start"] || "";
+        nextTitle.innerText = room["Next Meeting Title"] || "";
 
         if (room["Status Image"]) {
-          statusImage.src =
-            room["Status Image"] +
-            (room["Status Image"].includes("?") ? "&" : "?") +
-            "t=" +
-            Date.now();
-
+          statusImage.src = room["Status Image"];
           statusImage.style.display = "block";
         } else {
           statusImage.style.display = "none";
         }
 
       } catch (err) {
-        console.error("Load error:", err);
+        document.getElementById("debug").innerText = "ERROR: " + err.message;
       }
     }
 
     function updateClock() {
       const now = new Date();
-
-      document.getElementById("clockTime").innerText =
-        now.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit"
-        });
-
-      document.getElementById("clockDate").innerText =
-        now.toLocaleDateString([], {
-          weekday: "long",
-          month: "long",
-          day: "numeric"
-        });
+      clockTime.innerText = now.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+      });
+      clockDate.innerText = now.toLocaleDateString([], {
+        weekday: "long",
+        month: "long",
+        day: "numeric"
+      });
     }
 
     loadData();
     updateClock();
-
     setInterval(loadData, 5000);
     setInterval(updateClock, 1000);
-
-    // Safety reload every 2 minutes
-    setInterval(() => {
-      window.location.reload();
-    }, 120000);
   </script>
 </body>
 </html>
