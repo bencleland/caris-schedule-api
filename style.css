@@ -17,114 +17,90 @@ body {
     position: relative;
 }
 
-/* Current Meeting Person Name */
 #meetingTitle {
     position: absolute;
     left: 90px;
     top: 365px;
     width: 850px;
-
     font-size: 34px;
     font-weight: 700;
-    color: #000000;
-
+    color: #000;
     line-height: 1.15;
 }
 
-/* Guest Attendees */
 #guestAttendees {
     position: absolute;
     left: 90px;
     top: 565px;
     width: 700px;
-
-    font-size: 32px;
-    font-weight: 700;
-    color: #000000;
-
-    line-height: 1.25;
+    font-size: 24px;
+    font-weight: 400;
+    color: #000;
+    line-height: 1.3;
     white-space: pre-wrap;
 }
 
-/* Caris Attendees */
 #carisAttendees {
     position: absolute;
     left: 90px;
     top: 875px;
     width: 700px;
-
-    font-size: 32px;
-    font-weight: 700;
-    color: #000000;
-
-    line-height: 1.25;
+    font-size: 24px;
+    font-weight: 400;
+    color: #000;
+    line-height: 1.3;
     white-space: pre-wrap;
 }
 
-/* Clock Time */
 #clockTime {
     position: absolute;
-    left: 1385px;
-    top: 425px;
-    width: 430px;
-
+    left: 1310px;
+    top: 410px;
+    width: 540px;
     text-align: center;
-
-    font-size: 36px;
+    font-size: 54px;
     font-weight: 700;
-    color: #000000;
+    color: #fff;
 }
 
-/* Clock Date */
 #clockDate {
     position: absolute;
-    left: 1385px;
+    left: 1310px;
     top: 475px;
-    width: 430px;
-
+    width: 540px;
     text-align: center;
-
-    font-size: 36px;
-    font-weight: 700;
-    color: #000000;
+    font-size: 28px;
+    font-weight: 400;
+    color: #fff;
 }
 
-/* Status Image */
 #statusImage {
     position: absolute;
-    left: 860px;
-    top: 885px;
-
-    width: 380px;
+    left: 845px;
+    top: 875px;
+    width: 420px;
     height: auto;
 }
 
-/* Next Meeting Time */
 #nextTime {
     position: absolute;
-    left: 1370px;
-    top: 695px;
-    width: 420px;
-
+    left: 1325px;
+    top: 655px;
+    width: 520px;
     text-align: center;
-
-    font-size: 34px;
+    font-size: 30px;
     font-weight: 700;
-    color: #000000;
+    color: #000;
 }
 
-/* Next Meeting Person */
 #nextTitle {
     position: absolute;
-    left: 1370px;
+    left: 1325px;
     top: 820px;
-    width: 420px;
-
+    width: 520px;
     text-align: center;
-
-    font-size: 32px;
-    font-weight: 700;
-    color: #000000;
-
+    font-size: 26px;
+    font-weight: 400;
+    color: #000;
     line-height: 1.15;
 }
