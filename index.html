@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css?v=400">
+  <link rel="stylesheet" href="style.css?v=401">
 </head>
 
 <body>
@@ -15,6 +15,8 @@
   <img id="statusImage" src="">
   <div id="nextTime"></div>
   <div id="nextTitle"></div>
+
+  <div id="debug" style="position:absolute;left:20px;bottom:20px;background:yellow;color:black;z-index:99999;font-size:18px;padding:10px;max-width:1500px;"></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -33,48 +35,50 @@
     };
 
     document.body.style.backgroundImage =
-      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=400")`;
+      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=401")`;
 
     const apiUrl =
       "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=Current%20Meeting%20Room%201";
-
-    function parseSheetDate(value) {
-      if (!value) return null;
-
-      const parts = value.trim().split(" ");
-      if (parts.length < 2) return null;
-
-      const dateParts = parts[0].split("/");
-      const timeParts = parts[1].split(":");
-
-      if (dateParts.length < 3 || timeParts.length < 2) return null;
-
-      const month = parseInt(dateParts[0], 10) - 1;
-      const day = parseInt(dateParts[1], 10);
-      const year = parseInt(dateParts[2], 10);
-
-      const hour = parseInt(timeParts[0], 10);
-      const minute = parseInt(timeParts[1], 10);
-      const second = parseInt(timeParts[2] || "0", 10);
-
-      return new Date(year, month, day, hour, minute, second);
-    }
 
     function clean(value) {
       return (value || "").trim();
     }
 
+    function parseSheetDate(value) {
+      if (!value) return null;
+
+      const match = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if (!match) return null;
+
+      const month = parseInt(match[1], 10) - 1;
+      const day = parseInt(match[2], 10);
+      const year = parseInt(match[3], 10);
+      const hour = parseInt(match[4], 10);
+      const minute = parseInt(match[5], 10);
+      const second = parseInt(match[6] || "0", 10);
+
+      return new Date(year, month, day, hour, minute, second);
+    }
+
     function getActiveMeeting(rows) {
       const now = new Date();
 
-      return rows.find(row => {
-        if (clean(row["Room Name"]) !== roomName) return false;
+      const roomRows = rows.filter(row => clean(row["Room Name"]) === roomName);
 
+      const active = roomRows.find(row => {
         const start = parseSheetDate(row["Start Time"]);
         const end = parseSheetDate(row["End Time"]);
-
         return start && end && now >= start && now < end;
       });
+
+      const firstFew = roomRows.slice(0, 3).map(r =>
+        `${clean(r["Meeting Title"])} | ${clean(r["Start Time"])} - ${clean(r["End Time"])}`
+      ).join(" || ");
+
+      debug.innerText =
+        `Room: ${roomName} | Browser now: ${now.toLocaleString()} | Room rows: ${roomRows.length} | Active: ${active ? clean(active["Meeting Title"]) : "NONE"} | Sample: ${firstFew}`;
+
+      return active;
     }
 
     function getNextMeeting(rows) {
@@ -94,10 +98,10 @@
       const next = getNextMeeting(rows);
 
       if (!room) {
-        meetingTitle.innerText = "Available";
+        meetingTitle.innerText = "";
         guestAttendees.innerText = "";
         carisAttendees.innerText = "";
-        nextTime.innerText = next ? clean(next["Start Time"]) : "";
+        nextTime.innerText = next ? clean(next["Next Meeting Start Display"]) || clean(next["Start Time"]) : "";
         nextTitle.innerText = next ? clean(next["Meeting Title"]) : "";
         statusImage.style.display = "none";
         return;
@@ -106,14 +110,8 @@
       meetingTitle.innerText = clean(room["Meeting Title"]);
       guestAttendees.innerText = clean(room["Guest Attendees"]);
       carisAttendees.innerText = clean(room["Caris Attendees"]);
-
-      nextTime.innerText =
-        clean(room["Next Meeting Start Display"]) ||
-        (next ? clean(next["Start Time"]) : "");
-
-      nextTitle.innerText =
-        clean(room["Next Meeting Title"]) ||
-        (next ? clean(next["Meeting Title"]) : "");
+      nextTime.innerText = clean(room["Next Meeting Start Display"]) || "";
+      nextTitle.innerText = clean(room["Next Meeting Title"]) || "";
 
       if (room["Status Image"]) {
         statusImage.src =
@@ -121,7 +119,6 @@
           (room["Status Image"].includes("?") ? "&" : "?") +
           "t=" +
           Date.now();
-
         statusImage.style.display = "block";
       } else {
         statusImage.style.display = "none";
@@ -135,16 +132,13 @@
         });
 
         const data = await response.json();
-
-        const rows = Array.isArray(data)
-          ? data
-          : data.result || [];
+        const rows = Array.isArray(data) ? data : data.result || [];
 
         const activeMeeting = getActiveMeeting(rows);
-
         setDisplay(activeMeeting, rows);
 
       } catch (err) {
+        debug.innerText = "ERROR: " + err.message;
         console.error("Data load error:", err);
       }
     }
