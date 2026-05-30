@@ -1,41 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CARIS Meeting Room Display</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CARIS Meeting Room Display</title>
 
-    <!-- Prevent browser caching -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
-    <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=99" />
 </head>
+
 <body>
+  <div id="meetingTitle"></div>
+  <div id="guestAttendees"></div>
+  <div id="carisAttendees"></div>
 
-    <!-- Dynamic Current Meeting -->
-    <div id="meetingTitle"></div>
+  <div id="clockTime"></div>
+  <div id="clockDate"></div>
 
-    <!-- Dynamic Guest Attendees -->
-    <div id="guestAttendees"></div>
+  <img id="statusImage" src="" alt="Status" />
 
-    <!-- Dynamic Caris Attendees -->
-    <div id="carisAttendees"></div>
+  <div id="nextTime"></div>
+  <div id="nextTitle"></div>
 
-    <!-- Dynamic Clock -->
-    <div id="clockTime"></div>
-    <div id="clockDate"></div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const sheet = params.get("sheet") || "Current Meeting Room 1";
 
-    <!-- Dynamic Status Image -->
-    <img id="statusImage" src="" alt="Status">
+    const backgrounds = {
+      "Current Meeting Room 1": "MEETING ROOM 1.png",
+      "Current Meeting Room 2": "MEETING ROOM 2.png",
+      "Current Meeting Room 3": "MEETING ROOM 3.png",
+      "Current Pod 1": "POD 1.png",
+      "Current Pod 2": "POD 2.png"
+    };
 
-    <!-- Dynamic Next Meeting -->
-    <div id="nextTime"></div>
-    <div id="nextTitle"></div>
+    if (backgrounds[sheet]) {
+      document.body.style.backgroundImage = `url("${backgrounds[sheet]}?v=99")`;
+    }
 
-    <!-- Force latest script version -->
-    <script src="script.js?v=5"></script>
+    async function loadData() {
+      try {
+        const apiUrl =
+          "/.netlify/functions/schedule?sheet=" +
+          encodeURIComponent(sheet) +
+          "&t=" +
+          Date.now();
 
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+          }
+        });
+
+        const data = await response.json();
+        const room = Array.isArray(data) ? data[0] : data;
+
+        if (!room) return;
+
+        document.getElementById("meetingTitle").innerText = room["Meeting Title"] || "";
+        document.getElementById("guestAttendees").innerText = room["Guest Attendees"] || "";
+        document.getElementById("carisAttendees").innerText = room["Caris Attendees"] || "";
+        document.getElementById("nextTime").innerText = room["Next Meeting Start Display"] || room["Next Meeting Start"] || "";
+        document.getElementById("nextTitle").innerText = room["Next Meeting Title"] || "";
+
+        const statusImage = document.getElementById("statusImage");
+        if (room["Status Image"]) {
+          statusImage.src = room["Status Image"] + (room["Status Image"].includes("?") ? "&" : "?") + "t=" + Date.now();
+          statusImage.style.display = "block";
+        } else {
+          statusImage.style.display = "none";
+        }
+
+        console.log("Updated:", new Date().toLocaleTimeString(), room["Meeting Title"]);
+      } catch (err) {
+        console.error("Load error:", err);
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+
+      document.getElementById("clockTime").innerText =
+        now.toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit"
+        });
+
+      document.getElementById("clockDate").innerText =
+        now.toLocaleDateString([], {
+          weekday: "long",
+          month: "long",
+          day: "numeric"
+        });
+    }
+
+    loadData();
+    updateClock();
+
+    setInterval(loadData, 5000);
+    setInterval(updateClock, 1000);
+
+    setInterval(() => {
+      window.location.reload(true);
+    }, 10 * 60 * 1000);
+  </script>
 </body>
 </html>
