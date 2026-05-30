@@ -1,4 +1,4 @@
-// Determine which room we are displaying
+// Get room from URL
 const params = new URLSearchParams(window.location.search);
 const sheet = params.get("sheet") || "Current Meeting Room 1";
 
@@ -17,7 +17,7 @@ if (backgrounds[sheet]) {
     `url("${backgrounds[sheet]}")`;
 }
 
-// Your Netlify API URL
+// YOUR NETLIFY FUNCTION URL
 const apiUrl =
   "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=" +
   encodeURIComponent(sheet);
@@ -25,10 +25,20 @@ const apiUrl =
 // Load meeting data
 async function loadData() {
   try {
-    const response = await fetch(apiUrl + "&t=" + Date.now());
+
+    const response = await fetch(
+      apiUrl + "&t=" + Date.now(),
+      {
+        cache: "no-store"
+      }
+    );
+
     const data = await response.json();
 
-    if (!data || !data.length) return;
+    if (!data || !data.length) {
+      console.log("No data returned");
+      return;
+    }
 
     const room = data[0];
 
@@ -51,14 +61,15 @@ async function loadData() {
       document.getElementById("statusImage").src =
         room["Status Image"];
     }
-  }
-  catch (err) {
-    console.log(err);
+
+  } catch (err) {
+    console.error("Data load error:", err);
   }
 }
 
-// Live clock
+// Live Clock
 function updateClock() {
+
   const now = new Date();
 
   document.getElementById("clockTime").innerText =
@@ -79,8 +90,8 @@ function updateClock() {
 loadData();
 updateClock();
 
-// Refresh data every 15 seconds
-setInterval(loadData, 15000);
+// Refresh meeting data every 5 seconds
+setInterval(loadData, 5000);
 
 // Refresh clock every second
 setInterval(updateClock, 1000);
