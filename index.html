@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>CARIS Meeting Room Display</title>
-  <link rel="stylesheet" href="style.css?v=600">
+  <link rel="stylesheet" href="style.css?v=800">
 </head>
 
 <body>
@@ -15,8 +15,6 @@
   <img id="statusImage" src="">
   <div id="nextTime"></div>
   <div id="nextTitle"></div>
-
-  <div id="debug" style="position:absolute;left:20px;bottom:20px;background:yellow;color:black;z-index:99999;font-size:18px;padding:10px;max-width:1650px;"></div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -35,7 +33,7 @@
     };
 
     document.body.style.backgroundImage =
-      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=600")`;
+      `url("${backgrounds[roomName] || "MEETING ROOM 1.png"}?v=800")`;
 
     const apiUrl =
       "https://bespoke-crepe-e34f23.netlify.app/.netlify/functions/schedule?sheet=Current%20Meeting%20Room%201";
@@ -55,7 +53,28 @@
       if (!value) return null;
       value = value.trim();
 
-      let match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      let match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (match) {
+        const now = new Date();
+
+        let hour = parseInt(match[1], 10);
+        const minute = parseInt(match[2], 10);
+        const ampm = match[3].toUpperCase();
+
+        if (ampm === "PM" && hour !== 12) hour += 12;
+        if (ampm === "AM" && hour === 12) hour = 0;
+
+        return new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          hour,
+          minute,
+          0
+        );
+      }
+
+      match = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
       if (match) {
         return new Date(
           parseInt(match[3], 10),
@@ -67,46 +86,26 @@
         );
       }
 
-      match = value.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-      if (match) {
-        const now = new Date();
-        let hour = parseInt(match[1], 10);
-        const minute = parseInt(match[2], 10);
-        const ampm = match[3].toUpperCase();
-
-        if (ampm === "PM" && hour !== 12) hour += 12;
-        if (ampm === "AM" && hour === 12) hour = 0;
-
-        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, 0);
-      }
-
       return null;
     }
 
     function getActiveMeeting(rows) {
       const now = new Date();
 
-      const roomRows = rows.filter(row => clean(row["Room Name"]) === roomName);
-
-      const activeByTime = roomRows
+      const activeByTime = rows
+        .filter(row => clean(row["Room Name"]) === roomName)
         .map(row => ({
           row,
-          title: clean(row["Meeting Title"]),
-          startRaw: clean(row["Start Time"]),
-          endRaw: clean(row["End Time"]),
           start: parseSheetDate(row["Start Time"]),
           end: parseSheetDate(row["End Time"])
         }))
-        .filter(item => item.start && item.end && now >= item.start && now < item.end)
+        .filter(item =>
+          item.start &&
+          item.end &&
+          now >= item.start &&
+          now < item.end
+        )
         .sort((a, b) => b.start - a.start);
-
-      const sample = roomRows
-        .slice(0, 8)
-        .map(r => `${clean(r["Meeting Title"])} [${clean(r["Start Time"])}-${clean(r["End Time"])}]`)
-        .join(" || ");
-
-      debug.innerText =
-        `Room: ${roomName} | Now: ${now.toLocaleString()} | Rows: ${roomRows.length} | Matches: ${activeByTime.length} | Active: ${activeByTime[0]?.title || "NONE"} | Sample: ${sample}`;
 
       return activeByTime.length ? activeByTime[0].row : null;
     }
@@ -168,7 +167,6 @@
         setDisplay(activeMeeting, rows);
 
       } catch (err) {
-        debug.innerText = "ERROR: " + err.message;
         console.error("Data load error:", err);
       }
     }
@@ -193,6 +191,10 @@
 
     setInterval(loadData, 5000);
     setInterval(updateClock, 1000);
+
+    setInterval(() => {
+      window.location.reload();
+    }, 15000);
   </script>
 </body>
 </html>
